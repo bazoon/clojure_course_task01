@@ -1,29 +1,37 @@
 (ns task01.core
   (:require [pl.danieljanus.tagsoup :refer :all])
+  (:require clojure.pprint)
   (:gen-class))
 
 
 (defn get-links []
-" 1) Find all elements containing {:class \"r\"}.
 
-Example:
-[:h3 {:class \"r\"} [:a {:shape \"rect\", :class \"l\",
-                         :href \"https://github.com/clojure/clojure\",
-                         :onmousedown \"return rwt(this,'','','','4','AFQjCNFlSngH8Q4cB8TMqb710dD6ZkDSJg','','0CFYQFjAD','','',event)\"}
-                     [:em {} \"clojure\"] \"/\" [:em {} \"clojure\"] \" · GitHub\"]]
+  
+  (defn mparse 
+   [data acc]  
+  (cond
+    (vector? data) (let [fst (first data) snd (fnext data) nxt (next data)]
+     (if (and (= fst :h3) (= snd {:class "r"}))
+     (conj acc (get (get (first (next (next data))) 1) :href))
+     (conj (mparse fst acc) (mparse nxt acc))))
+     (seq? data) (conj (mparse (first data) acc) (mparse (next data) acc))
+   :else nil))
 
-   2) Extract href from the element :a.
-
-The link from the example above is 'https://github.com/clojure/clojure'.
-
-  3) Return vector of all 10 links.
-
-Example: ['https://github.com/clojure/clojure', 'http://clojure.com/', . . .]
-"
   (let [data (parse "clojure_google.html")]
-    nil))
+    (into [] (filter identity (flatten (mparse data []))) )))
+
+
+ 
+
+
 
 (defn -main []
   (println (str "Found " (count (get-links)) " links!")))
+
+
+
+
+
+
 
 
